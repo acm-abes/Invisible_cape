@@ -2,47 +2,50 @@ from flask import Flask, render_template, Response, jsonify, request
 import cv2
 import numpy as np
 from scipy import ndimage
-import threading
-import time
+import base64
+from io import BytesIO
+from PIL import Image
 
 app = Flask(__name__)
 
 class InvisibleCloak:
     def __init__(self):
-        self.cap = None
         self.background = None
         self.color_lower = np.array([100, 50, 50])  # Default blue color range
         self.color_upper = np.array([130, 255, 255])
-        self.is_capturing_background = False
-        self.frame = None
-        self.lock = threading.Lock()
+        self.current_frame = None
         
-    def start_camera(self):
-        """Initialize camera capture"""
-        self.cap = cv2.VideoCapture(0)
-        if not self.cap.isOpened():
-            raise Exception("Could not open camera")
-        
-        # Set camera properties for better performance
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        self.cap.set(cv2.CAP_PROP_FPS, 30)
-        
-    def stop_camera(self):
-        """Release camera resources"""
-        if self.cap:
-            self.cap.release()
+    def decode_image(self, base64_string):
+        """Decode base64 image to numpy array"""
+        try:
+            # Remove data URL prefix if present
+            if 'base64,' in base64_string:
+                base64_string = base64_string.split('base64,')[1]
             
-    def capture_background(self):
-        """Capture the background when no object is present"""
-        if self.cap and self.cap.isOpened():
-            ret, frame = self.cap.read()
-            if ret:
-                # Flip frame horizontally for mirror effect
-                frame = cv2.flip(frame, 1)
-                # Convert to HSV for better color detection
-                self.background = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                return True
+            # Decode base64 to image
+            img_data = base64.b64decode(base64_string)
+            img = Image.open(BytesIO(img_data))
+            
+            # Convert to numpy array and BGR format for OpenCV
+            frame = np.array(img)
+            if len(frame.shape) == 2:  # Grayscale
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            elif frame.shape[2] == 4:  # RGBA
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
+            else:  # RGB
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            
+            return frame
+        except Exception as e:
+            print(f"Error decoding image: {e}")
+            return None
+        
+    def capture_background_from_frame(self, frame):
+        """Capture the background from a provided frame"""
+        if frame is not None:
+            # Convert to HSV for better color detection
+            self.background = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            return True
         return False
         
     def detect_color_mask(self, frame):
@@ -103,17 +106,10 @@ class InvisibleCloak:
         
         return result.astype(np.uint8)
         
-    def process_frame(self):
+    def process_frame(self, frame):
         """Process a single frame for the invisible cloak effect"""
-        if not self.cap or not self.cap.isOpened():
+        if frame is None:
             return None
-            
-        ret, frame = self.cap.read()
-        if not ret:
-            return None
-            
-        # Flip frame horizontally for mirror effect
-        frame = cv2.flip(frame, 1)
         
         # Detect color mask
         mask = self.detect_color_mask(frame)
@@ -124,6 +120,7 @@ class InvisibleCloak:
         # Blend with background
         result = self.blend_background(frame, smooth_mask)
         
+        self.current_frame = result
         return result
         
     def set_color_range(self, color_name):
@@ -143,39 +140,55 @@ class InvisibleCloak:
 # Global instance
 cloak = InvisibleCloak()
 
-def generate_frames():
-    """Generate video frames for streaming"""
-    while True:
-        with cloak.lock:
-            frame = cloak.process_frame()
-            
-        if frame is not None:
-            # Encode frame as JPEG
-            ret, buffer = cv2.imencode('.jpg', frame)
-            if ret:
-                frame_bytes = buffer.tobytes()
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-        else:
-            time.sleep(0.1)
-
 @app.route('/')
 def index():
     """Main page"""
     return render_template('index.html')
 
-@app.route('/video_feed')
-def video_feed():
-    """Video streaming route"""
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+    """Process a frame from the browser"""
+    try:
+        data = request.get_json()
+        frame_data = data.get('frame')
+        
+        if not frame_data:
+            return jsonify({'success': False, 'error': 'No frame data'})
+        
+        # Decode the frame
+        frame = cloak.decode_image(frame_data)
+        if frame is None:
+            return jsonify({'success': False, 'error': 'Failed to decode frame'})
+        
+        # Process the frame
+        processed_frame = cloak.process_frame(frame)
+        
+        if processed_frame is not None:
+            # Encode back to base64
+            _, buffer = cv2.imencode('.jpg', processed_frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            frame_base64 = base64.b64encode(buffer).decode('utf-8')
+            return jsonify({'success': True, 'frame': f'data:image/jpeg;base64,{frame_base64}'})
+        else:
+            return jsonify({'success': False, 'error': 'Processing failed'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/capture_background', methods=['POST'])
 def capture_background():
     """Capture background endpoint"""
     try:
-        with cloak.lock:
-            success = cloak.capture_background()
+        data = request.get_json()
+        frame_data = data.get('frame')
+        
+        if not frame_data:
+            return jsonify({'success': False, 'error': 'No frame data'})
+        
+        # Decode the frame
+        frame = cloak.decode_image(frame_data)
+        if frame is None:
+            return jsonify({'success': False, 'error': 'Failed to decode frame'})
+        
+        success = cloak.capture_background_from_frame(frame)
         return jsonify({'success': success})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -191,26 +204,5 @@ def set_color():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-@app.route('/start_camera', methods=['POST'])
-def start_camera():
-    """Start camera endpoint"""
-    try:
-        cloak.start_camera()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/stop_camera', methods=['POST'])
-def stop_camera():
-    """Stop camera endpoint"""
-    try:
-        cloak.stop_camera()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
-
 if __name__ == '__main__':
-    try:
-        app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)
-    finally:
-        cloak.stop_camera()
+    app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)

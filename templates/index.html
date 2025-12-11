@@ -1,369 +1,483 @@
+<!-- @format -->
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Harry Potter Invisible Cloak</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
 
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        max-width: 1200px;
+        width: 100%;
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .video-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      #videoCanvas {
+        max-width: 100%;
+        height: auto;
+        border-radius: 15px;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .control-group {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+      }
+
+      .control-group h3 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+      }
+
+      .color-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .color-btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .color-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .color-btn.active {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .red {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+      }
+      .blue {
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+      }
+      .green {
+        background: linear-gradient(45deg, #45b7d1, #96c93d);
+      }
+      .yellow {
+        background: linear-gradient(45deg, #f9ca24, #f0932b);
+      }
+      .purple {
+        background: linear-gradient(45deg, #a8edea, #fed6e3);
+        color: #333;
+      }
+
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .btn {
+        padding: 15px 25px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+      }
+
+      .btn-success {
+        background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+        color: white;
+      }
+
+      .btn-danger {
+        background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        color: white;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .status {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        font-weight: bold;
+      }
+
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .instructions {
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 15px;
+        margin-top: 20px;
+        border-left: 5px solid #2196f3;
+      }
+
+      .instructions h3 {
+        color: #1976d2;
+        margin-bottom: 15px;
+      }
+
+      .instructions ol {
+        color: #424242;
+        line-height: 1.6;
+      }
+
+      .instructions li {
+        margin-bottom: 8px;
+      }
+
+      @media (max-width: 768px) {
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 1200px;
-            width: 100%;
+          padding: 20px;
         }
 
         h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .video-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        #videoStream {
-            max-width: 100%;
-            height: auto;
-            border-radius: 15px;
+          font-size: 2em;
         }
 
         .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+          grid-template-columns: 1fr;
         }
-
-        .control-group {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px solid #e9ecef;
-        }
-
-        .control-group h3 {
-            color: #495057;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-
-        .color-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .color-btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .color-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .color-btn.active {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .red { background: linear-gradient(45deg, #ff6b6b, #ee5a52); }
-        .blue { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
-        .green { background: linear-gradient(45deg, #45b7d1, #96c93d); }
-        .yellow { background: linear-gradient(45deg, #f9ca24, #f0932b); }
-        .purple { background: linear-gradient(45deg, #a8edea, #fed6e3); color: #333; }
-
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .btn {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .btn-success {
-            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .status {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .instructions {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            border-left: 5px solid #2196f3;
-        }
-
-        .instructions h3 {
-            color: #1976d2;
-            margin-bottom: 15px;
-        }
-
-        .instructions ol {
-            color: #424242;
-            line-height: 1.6;
-        }
-
-        .instructions li {
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            .controls {
-                grid-template-columns: 1fr;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🧙‍♂️ Harry Potter Invisible Cloak 🧙‍♀️</h1>
-        
-        <div class="video-container">
-            <img id="videoStream" src="{{ url_for('video_feed') }}" alt="Video Stream">
+      <h1>🧙‍♂️ Harry Potter Invisible Cloak 🧙‍♀️</h1>
+
+      <div class="video-container">
+        <canvas id="videoCanvas" width="640" height="480"></canvas>
+        <video
+          id="videoElement"
+          width="640"
+          height="480"
+          autoplay
+          style="display: none"
+        ></video>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <h3>🎨 Cloak Color</h3>
+          <div class="color-buttons">
+            <button class="color-btn red" onclick="setColor('red')">Red</button>
+            <button class="color-btn blue active" onclick="setColor('blue')">
+              Blue
+            </button>
+            <button class="color-btn green" onclick="setColor('green')">
+              Green
+            </button>
+            <button class="color-btn yellow" onclick="setColor('yellow')">
+              Yellow
+            </button>
+            <button class="color-btn purple" onclick="setColor('purple')">
+              Purple
+            </button>
+          </div>
         </div>
-        
-        <div class="controls">
-            <div class="control-group">
-                <h3>🎨 Cloak Color</h3>
-                <div class="color-buttons">
-                    <button class="color-btn red" onclick="setColor('red')">Red</button>
-                    <button class="color-btn blue active" onclick="setColor('blue')">Blue</button>
-                    <button class="color-btn green" onclick="setColor('green')">Green</button>
-                    <button class="color-btn yellow" onclick="setColor('yellow')">Yellow</button>
-                    <button class="color-btn purple" onclick="setColor('purple')">Purple</button>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>🎬 Camera Controls</h3>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="startCamera()">Start Camera</button>
-                    <button class="btn btn-danger" onclick="stopCamera()">Stop Camera</button>
-                </div>
-            </div>
-            
-            <div class="control-group">
-                <h3>📸 Background</h3>
-                <div class="action-buttons">
-                    <button class="btn btn-success" onclick="captureBackground()">Capture Background</button>
-                </div>
-            </div>
+
+        <div class="control-group">
+          <h3>🎬 Camera Controls</h3>
+          <div class="action-buttons">
+            <button class="btn btn-primary" onclick="startCamera()">
+              Start Camera
+            </button>
+            <button class="btn btn-danger" onclick="stopCamera()">
+              Stop Camera
+            </button>
+          </div>
         </div>
-        
-        <div id="status" class="status" style="display: none;"></div>
-        
-        <div class="instructions">
-            <h3>📋 How to Use Your Invisible Cloak:</h3>
-            <ol>
-                <li><strong>Start the Camera:</strong> Click "Start Camera" to begin video capture</li>
-                <li><strong>Choose Your Cloak Color:</strong> Select the color of your cloak (red, blue, green, yellow, or purple)</li>
-                <li><strong>Capture Background:</strong> Stand out of frame and click "Capture Background" to record the empty scene</li>
-                <li><strong>Put on Your Cloak:</strong> Wear a cloth of the selected color and step into the frame</li>
-                <li><strong>Become Invisible:</strong> Watch as the colored areas are replaced with the background!</li>
-            </ol>
-            <p><strong>💡 Tip:</strong> For best results, use a solid-colored cloth and ensure good lighting!</p>
+
+        <div class="control-group">
+          <h3>📸 Background</h3>
+          <div class="action-buttons">
+            <button class="btn btn-success" onclick="captureBackground()">
+              Capture Background
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div id="status" class="status" style="display: none"></div>
+
+      <div class="instructions">
+        <h3>📋 How to Use Your Invisible Cloak:</h3>
+        <ol>
+          <li>
+            <strong>Start the Camera:</strong> Click "Start Camera" to begin
+            video capture
+          </li>
+          <li>
+            <strong>Choose Your Cloak Color:</strong> Select the color of your
+            cloak (red, blue, green, yellow, or purple)
+          </li>
+          <li>
+            <strong>Capture Background:</strong> Stand out of frame and click
+            "Capture Background" to record the empty scene
+          </li>
+          <li>
+            <strong>Put on Your Cloak:</strong> Wear a cloth of the selected
+            color and step into the frame
+          </li>
+          <li>
+            <strong>Become Invisible:</strong> Watch as the colored areas are
+            replaced with the background!
+          </li>
+        </ol>
+        <p>
+          <strong>💡 Tip:</strong> For best results, use a solid-colored cloth
+          and ensure good lighting!
+        </p>
+      </div>
     </div>
 
     <script>
-        let currentColor = 'blue';
-        
-        function showStatus(message, isError = false) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = `status ${isError ? 'error' : 'success'}`;
-            status.style.display = 'block';
-            
-            setTimeout(() => {
-                status.style.display = 'none';
-            }, 3000);
+      let currentColor = "blue";
+      let stream = null;
+      let videoElement = document.getElementById("videoElement");
+      let canvas = document.getElementById("videoCanvas");
+      let ctx = canvas.getContext("2d");
+      let isProcessing = false;
+      let processingInterval = null;
+
+      function showStatus(message, isError = false) {
+        const status = document.getElementById("status");
+        status.textContent = message;
+        status.className = `status ${isError ? "error" : "success"}`;
+        status.style.display = "block";
+
+        setTimeout(() => {
+          status.style.display = "none";
+        }, 3000);
+      }
+
+      async function startCamera() {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+            },
+          });
+          videoElement.srcObject = stream;
+
+          // Wait for video to be ready
+          videoElement.onloadedmetadata = () => {
+            videoElement.play();
+            startProcessing();
+            showStatus("Camera started successfully!");
+          };
+        } catch (error) {
+          showStatus(`Error starting camera: ${error.message}`, true);
         }
-        
-        function setColor(color) {
-            currentColor = color;
-            
-            // Update button states
-            document.querySelectorAll('.color-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Send color to backend
-            fetch('/set_color', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ color: color })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus(`Color changed to ${color}!`);
-                } else {
-                    showStatus(`Error changing color: ${data.error}`, true);
-                }
-            })
-            .catch(error => {
-                showStatus(`Error: ${error.message}`, true);
-            });
+      }
+
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          stream = null;
+          stopProcessing();
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          showStatus("Camera stopped successfully!");
         }
-        
-        function startCamera() {
-            fetch('/start_camera', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('Camera started successfully!');
-                } else {
-                    showStatus(`Error starting camera: ${data.error}`, true);
-                }
-            })
-            .catch(error => {
-                showStatus(`Error: ${error.message}`, true);
+      }
+
+      function startProcessing() {
+        if (processingInterval) return;
+
+        isProcessing = true;
+        processingInterval = setInterval(async () => {
+          if (!stream) return;
+
+          // Draw current frame to canvas
+          ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+          // Get frame as base64
+          const frameData = canvas.toDataURL("image/jpeg", 0.8);
+
+          // Send to backend for processing
+          try {
+            const response = await fetch("/process_frame", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ frame: frameData }),
             });
+
+            const data = await response.json();
+
+            if (data.success && data.frame) {
+              // Display processed frame
+              const img = new Image();
+              img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              };
+              img.src = data.frame;
+            }
+          } catch (error) {
+            console.error("Processing error:", error);
+          }
+        }, 100); // Process at ~10 fps
+      }
+
+      function stopProcessing() {
+        if (processingInterval) {
+          clearInterval(processingInterval);
+          processingInterval = null;
+          isProcessing = false;
         }
-        
-        function stopCamera() {
-            fetch('/stop_camera', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('Camera stopped successfully!');
-                } else {
-                    showStatus(`Error stopping camera: ${data.error}`, true);
-                }
-            })
-            .catch(error => {
-                showStatus(`Error: ${error.message}`, true);
-            });
+      }
+
+      async function captureBackground() {
+        if (!stream) {
+          showStatus("Please start the camera first!", true);
+          return;
         }
-        
-        function captureBackground() {
-            fetch('/capture_background', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('Background captured successfully! Now put on your cloak!');
-                } else {
-                    showStatus(`Error capturing background: ${data.error}`, true);
-                }
-            })
-            .catch(error => {
-                showStatus(`Error: ${error.message}`, true);
-            });
+
+        // Get current frame
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        const frameData = canvas.toDataURL("image/jpeg", 0.8);
+
+        try {
+          const response = await fetch("/capture_background", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ frame: frameData }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showStatus(
+              "Background captured successfully! Now put on your cloak!"
+            );
+          } else {
+            showStatus(`Error capturing background: ${data.error}`, true);
+          }
+        } catch (error) {
+          showStatus(`Error: ${error.message}`, true);
         }
-        
-        // Auto-start camera when page loads
-        window.addEventListener('load', function() {
-            setTimeout(startCamera, 1000);
+      }
+
+      function setColor(color) {
+        currentColor = color;
+
+        // Update button states
+        document.querySelectorAll(".color-btn").forEach((btn) => {
+          btn.classList.remove("active");
         });
+        event.target.classList.add("active");
+
+        // Send color to backend
+        fetch("/set_color", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ color: color }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              showStatus(`Color changed to ${color}!`);
+            } else {
+              showStatus(`Error changing color: ${data.error}`, true);
+            }
+          })
+          .catch((error) => {
+            showStatus(`Error: ${error.message}`, true);
+          });
+      }
+
+      // Auto-start camera when page loads
+      window.addEventListener("load", function () {
+        setTimeout(startCamera, 1000);
+      });
+
+      // Cleanup on page unload
+      window.addEventListener("beforeunload", function () {
+        stopCamera();
+      });
     </script>
-</body>
+  </body>
 </html>
