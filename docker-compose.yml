@@ -1,0 +1,15 @@
+# @format
+
+version: "3.8"
+
+services:
+  invisible-cloak:
+    build: .
+    ports:
+      - "5000:5000"
+    devices:
+      - /dev/video0:/dev/video0 # Camera access (Linux/Mac)
+    privileged: true # Required for camera access
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
